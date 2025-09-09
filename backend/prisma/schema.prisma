@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and role-based access control
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  assignedAssets    Asset[]              @relation("AssetAssignee")
+  createdAssets     Asset[]              @relation("AssetCreator")
+  statusChanges     AssetStatusHistory[]
+
+  @@map("users")
+}
+
+// Asset model for tracking corporate assets
+model Asset {
+  id            String      @id @default(cuid())
+  name          String
+  description   String?
+  serialNumber  String?     @unique
+  category      AssetCategory
+  status        AssetStatus @default(AVAILABLE)
+  purchaseDate  DateTime?
+  purchasePrice Decimal?
+  vendor        String?
+  location      String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Foreign keys
+  assigneeId  String?
+  createdById String
+
+  // Relationships
+  assignee           User?                 @relation("AssetAssignee", fields: [assigneeId], references: [id])
+  createdBy          User                  @relation("AssetCreator", fields: [createdById], references: [id])
+  maintenanceRecords MaintenanceRecord[]
+  statusHistory      AssetStatusHistory[]
+
+  // Indexes for performance
+  @@index([status])
+  @@index([category])
+  @@index([assigneeId])
+  @@map("assets")
+}
+
+// MaintenanceRecord model for tracking asset maintenance history
+model MaintenanceRecord {
+  id          String   @id @default(cuid())
+  description String
+  cost        Decimal?
+  date        DateTime
+  createdAt   DateTime @default(now())
+
+  // Foreign keys
+  assetId String
+
+  // Relationships
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("maintenance_records")
+}
+
+// AssetStatusHistory model for audit trail of status changes
+model AssetStatusHistory {
+  id          String      @id @default(cuid())
+  assetId     String
+  oldStatus   AssetStatus?
+  newStatus   AssetStatus
+  changedById String
+  reason      String?
+  createdAt   DateTime    @default(now())
+
+  // Relationships
+  asset     Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  changedBy User  @relation(fields: [changedById], references: [id])
+
+  @@map("asset_status_history")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  MANAGER
+  USER
+}
+
+enum AssetCategory {
+  HARDWARE
+  SOFTWARE
+  FURNITURE
+  VEHICLE
+  OTHER
+}
+
+enum AssetStatus {
+  AVAILABLE
+  ASSIGNED
+  MAINTENANCE
+  RETIRED
+  LOST
+}

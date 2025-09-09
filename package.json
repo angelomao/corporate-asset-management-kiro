@@ -1,0 +1,14 @@
+{
+  "name": "corporate-asset-management",
+  "version": "1.0.0",
+  "description": "Corporate Asset Management System",
+  "scripts": {
+    "dev": "docker-compose up",
+    "build": "docker-compose build",
+    "down": "docker-compose down",
+    "clean": "docker-compose down -v"
+  },
+  "keywords": ["asset-management", "corporate", "inventory"],
+  "author": "",
+  "license": "MIT"
+}
