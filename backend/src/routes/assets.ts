@@ -629,4 +629,62 @@ router.get('/:id/status-history', authenticateToken, async (req, res) => {
   }
 });
 
+// DELETE /api/assets/:id - Delete asset (Admin only)
+router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if asset exists
+    const existingAsset = await prisma.asset.findUnique({
+      where: { id },
+      include: {
+        assignee: true,
+      },
+    });
+    
+    if (!existingAsset) {
+      res.status(404).json({ error: 'Asset not found' });
+      return;
+    }
+    
+    // Check if asset is assigned
+    if (existingAsset.assigneeId) {
+      res.status(400).json({ 
+        error: 'Cannot delete assigned asset',
+        message: 'Please unassign the asset before deleting it'
+      });
+      return;
+    }
+    
+    // Delete asset and related records in a transaction
+    await prisma.$transaction(async (tx) => {
+      // Delete status history records first (due to foreign key constraints)
+      await tx.assetStatusHistory.deleteMany({
+        where: { assetId: id },
+      });
+      
+      // Delete maintenance records
+      await tx.maintenanceRecord.deleteMany({
+        where: { assetId: id },
+      });
+      
+      // Delete the asset
+      await tx.asset.delete({
+        where: { id },
+      });
+    });
+
+    res.json({ 
+      message: 'Asset deleted successfully',
+      deletedAsset: {
+        id: existingAsset.id,
+        name: existingAsset.name,
+      }
+    });
+  } catch (error) {
+    console.error('Error deleting asset:', error);
+    res.status(500).json({ error: 'Failed to delete asset' });
+  }
+});
+
 export default router;

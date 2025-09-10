@@ -13,9 +13,13 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:prod": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
+    "prisma:seed": "ts-node prisma/seed.ts",
     "docker:build": "docker build -t asset-management-backend .",
     "docker:build:prod": "docker build --target production -t asset-management-backend:prod .",
     "health-check": "curl -f http://localhost:3001/health || exit 1"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",

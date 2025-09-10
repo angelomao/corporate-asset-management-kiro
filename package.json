@@ -3,10 +3,18 @@
   "version": "1.0.0",
   "description": "Corporate Asset Management System",
   "scripts": {
-    "dev": "docker-compose up",
-    "build": "docker-compose build",
-    "down": "docker-compose down",
-    "clean": "docker-compose down -v"
+    "dev": "docker compose up -d",
+    "dev:legacy": "docker-compose up -d",
+    "dev:manual": "./scripts/start-manual.sh",
+    "build": "docker compose build",
+    "build:legacy": "docker-compose build",
+    "down": "docker compose down",
+    "down:legacy": "docker-compose down",
+    "down:manual": "./scripts/stop-manual.sh",
+    "clean": "docker compose down -v",
+    "clean:legacy": "docker-compose down -v",
+    "logs": "docker compose logs -f",
+    "logs:legacy": "docker-compose logs -f"
   },
   "keywords": ["asset-management", "corporate", "inventory"],
   "author": "",

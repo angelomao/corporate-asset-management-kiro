@@ -76,6 +76,8 @@ export const AssetList: React.FC = () => {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [statusHistoryAsset, setStatusHistoryAsset] = useState<{ id: string; name: string } | null>(null);
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
 
   // Debounced search terms for better performance
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -263,7 +265,7 @@ export const AssetList: React.FC = () => {
         description: sanitizedData.description || undefined,
         serialNumber: sanitizedData.serialNumber || undefined,
         category: sanitizedData.category,
-        purchaseDate: sanitizedData.purchaseDate || undefined,
+        purchaseDate: sanitizedData.purchaseDate ? new Date(sanitizedData.purchaseDate).toISOString() : undefined,
         purchasePrice: sanitizedData.purchasePrice ? Number(sanitizedData.purchasePrice) : undefined,
         vendor: sanitizedData.vendor || undefined,
         location: sanitizedData.location || undefined,
@@ -344,6 +346,140 @@ export const AssetList: React.FC = () => {
     loadAssets();
   };
 
+  // Handle edit asset
+  const handleEditAsset = (asset: Asset) => {
+    setEditingAsset(asset);
+    setFormData({
+      name: asset.name,
+      description: asset.description || '',
+      serialNumber: asset.serialNumber || '',
+      category: asset.category,
+      purchaseDate: asset.purchaseDate ? new Date(asset.purchaseDate).toISOString().split('T')[0] : '',
+      purchasePrice: asset.purchasePrice ? asset.purchasePrice.toString() : '',
+      vendor: asset.vendor || '',
+      location: asset.location || '',
+    });
+    setShowCreateForm(true);
+  };
+
+  // Handle update asset
+  const handleUpdateAsset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAsset) return;
+    
+    clearFormErrors();
+    
+    // Sanitize form data
+    const sanitizedData = sanitizeFormData(formData);
+    
+    // Validate form data
+    const validation = validateForm(createAssetSchema, sanitizedData);
+    if (!validation.isValid) {
+      setFormErrors(validation.errors);
+      return;
+    }
+
+    // Check for unique serial number (if changed)
+    if (sanitizedData.serialNumber && 
+        sanitizedData.serialNumber !== editingAsset.serialNumber &&
+        assets.some(a => a.id !== editingAsset.id && a.serialNumber === sanitizedData.serialNumber)) {
+      setFormErrors({ serialNumber: 'Serial number must be unique' });
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      
+      const assetData = {
+        name: sanitizedData.name,
+        description: sanitizedData.description || undefined,
+        serialNumber: sanitizedData.serialNumber || undefined,
+        category: sanitizedData.category,
+        purchaseDate: sanitizedData.purchaseDate ? new Date(sanitizedData.purchaseDate).toISOString() : undefined,
+        purchasePrice: sanitizedData.purchasePrice ? Number(sanitizedData.purchasePrice) : undefined,
+        vendor: sanitizedData.vendor || undefined,
+        location: sanitizedData.location || undefined,
+      };
+
+      const updatedAsset = await assetService.updateAsset(editingAsset.id, assetData);
+      
+      // Update the asset in the list
+      setAssets(prev => prev.map(asset => 
+        asset.id === editingAsset.id ? updatedAsset : asset
+      ));
+      
+      // Reset form
+      setFormData({
+        name: '',
+        description: '',
+        serialNumber: '',
+        category: 'HARDWARE',
+        purchaseDate: '',
+        purchasePrice: '',
+        vendor: '',
+        location: '',
+      });
+      setShowCreateForm(false);
+      setEditingAsset(null);
+    } catch (err: any) {
+      const formattedError = handleApiError(err, 'Update Asset');
+      
+      // Handle field-specific validation errors
+      if (formattedError.type === 'validation' && formattedError.details) {
+        const fieldErrors: Record<string, string> = {};
+        formattedError.details.forEach(detail => {
+          const [field, message] = detail.split(': ');
+          if (field) {
+            fieldErrors[field] = message || detail;
+          }
+        });
+        setFormErrors(fieldErrors);
+      } else {
+        setError(formattedError);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Handle delete asset
+  const handleDeleteAsset = async () => {
+    if (!deletingAsset) return;
+    
+    try {
+      await assetService.deleteAsset(deletingAsset.id);
+      
+      // Remove asset from the list
+      setAssets(prev => prev.filter(asset => asset.id !== deletingAsset.id));
+      
+      // Update pagination
+      await loadAssets();
+      
+      setDeletingAsset(null);
+    } catch (err) {
+      const formattedError = handleApiError(err, 'Delete Asset');
+      setError(formattedError);
+      setDeletingAsset(null);
+    }
+  };
+
+  // Handle cancel edit
+  const handleCancelEdit = () => {
+    setEditingAsset(null);
+    setShowCreateForm(false);
+    setFormData({
+      name: '',
+      description: '',
+      serialNumber: '',
+      category: 'HARDWARE',
+      purchaseDate: '',
+      purchasePrice: '',
+      vendor: '',
+      location: '',
+    });
+    setFormErrors({});
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -393,8 +529,8 @@ export const AssetList: React.FC = () => {
 
       {/* Create Asset Form */}
       {showCreateForm && canManageAssets && (
-        <Card title="Create New Asset">
-          <form onSubmit={handleCreateAsset} className="space-y-4">
+        <Card title={editingAsset ? "Edit Asset" : "Create New Asset"}>
+          <form onSubmit={editingAsset ? handleUpdateAsset : handleCreateAsset} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Input
@@ -470,13 +606,13 @@ export const AssetList: React.FC = () => {
             <div className="flex justify-end space-x-3">
               <Button
                 type="button"
-                onClick={() => setShowCreateForm(false)}
+                onClick={editingAsset ? handleCancelEdit : () => setShowCreateForm(false)}
                 className="bg-gray-300 text-gray-700 hover:bg-gray-400"
               >
                 Cancel
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Creating...' : 'Create Asset'}
+                {submitting ? (editingAsset ? 'Updating...' : 'Creating...') : (editingAsset ? 'Update Asset' : 'Create Asset')}
               </Button>
             </div>
           </form>

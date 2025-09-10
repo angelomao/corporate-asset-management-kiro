@@ -63,19 +63,31 @@ The development environment uses `docker-compose.yml` and is optimized for devel
 # Using npm script (recommended)
 npm run dev
 
-# Or directly with Docker Compose
+# If you get API version errors, try the legacy version
+npm run dev:legacy
+
+# Or directly with Docker Compose (newer syntax)
+docker compose up -d
+
+# Or with legacy Docker Compose (older syntax)
 docker-compose up -d
 ```
 
 **View logs:**
 ```bash
-# All services
-docker-compose logs -f
+# Using npm script
+npm run logs
+
+# Or directly with Docker Compose
+docker compose logs -f
 
 # Specific service
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f database
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f database
+
+# Legacy syntax (if newer commands fail)
+docker-compose logs -f
 ```
 
 **Stop development environment:**
@@ -84,6 +96,9 @@ docker-compose logs -f database
 npm run down
 
 # Or directly with Docker Compose
+docker compose down
+
+# Legacy syntax (if newer commands fail)
 docker-compose down
 ```
 
@@ -216,10 +231,10 @@ docker-compose -f docker-compose.prod.yml exec database psql -U postgres -d asse
 2. **Database connection issues:**
    ```bash
    # Check database status
-   docker-compose exec database pg_isready -U postgres
+   docker compose exec database pg_isready -U postgres
    
    # Restart database
-   docker-compose restart database
+   docker compose restart database
    ```
 
 3. **Permission issues:**
@@ -231,13 +246,44 @@ docker-compose -f docker-compose.prod.yml exec database psql -U postgres -d asse
 4. **Clean slate restart:**
    ```bash
    # Stop everything and remove volumes
-   docker-compose down -v
+   docker compose down -v
    
    # Remove all images
-   docker-compose down --rmi all
+   docker compose down --rmi all
    
    # Start fresh
-   docker-compose up -d --build
+   docker compose up -d --build
+   ```
+
+5. **Docker API version errors:**
+   ```bash
+   # First, restart Docker Desktop completely
+   # Quit from menu bar, then reopen and wait for full startup
+   
+   # Check Docker versions
+   docker version
+   docker compose version
+   
+   # Try manual startup (bypasses Docker Compose)
+   npm run dev:manual
+   
+   # Or try legacy Docker Compose syntax
+   npm run dev:legacy
+   
+   # Or update Docker Desktop to latest version
+   # Download from: https://www.docker.com/products/docker-desktop
+   ```
+
+6. **Docker permission/overlay errors (macOS):**
+   ```bash
+   # Clean Docker system completely
+   docker system prune -a --volumes
+   
+   # Restart Docker Desktop
+   # Or reset Docker Desktop to factory defaults in Settings → Troubleshoot
+   
+   # If issue persists, try building without cache
+   docker compose build --no-cache
    ```
 
 **View container resource usage:**
@@ -248,13 +294,13 @@ docker stats
 **Access container shell:**
 ```bash
 # Backend container
-docker-compose exec backend sh
+docker compose exec backend sh
 
 # Frontend container (development)
-docker-compose exec frontend sh
+docker compose exec frontend sh
 
 # Database container
-docker-compose exec database bash
+docker compose exec database bash
 ```
 
 ## Project Structure
