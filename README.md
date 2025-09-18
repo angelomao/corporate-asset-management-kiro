@@ -25,17 +25,48 @@ A comprehensive web application for tracking, managing, and maintaining corporat
 - Docker and Docker Compose
 - Node.js 18+ (for local development)
 
+### Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd asset-management-system
+   ```
+
+2. **Start the system** (one command setup)
+   ```bash
+   npm start
+   ```
+   
+   This will automatically:
+   - ✅ Build all Docker containers with optimized configurations
+   - ✅ Set up PostgreSQL database with health checks
+   - ✅ Run database migrations and schema updates
+   - ✅ Seed initial user accounts for immediate use
+   - ✅ Start all services with proper networking and monitoring
+   - ✅ Verify all services are healthy and ready
+   - ✅ Display service URLs and login credentials
+
+   **Startup time**: ~30-60 seconds (depending on your system)
+
+3. **Access the application**
+   - **Frontend**: http://localhost:3000 (React application)
+   - **Backend API**: http://localhost:3001 (Express server)
+   - **Database**: localhost:5432 (PostgreSQL)
+   - **Health Check**: http://localhost:3001/health
+
 ### Development Setup
 
-1. Clone the repository
-2. Copy environment variables:
+**Alternative manual setup:**
+
+1. Copy environment variables (optional):
    ```bash
    cp .env.example .env
    cp backend/.env.example backend/.env
    cp frontend/.env.example frontend/.env
    ```
 
-3. Start the development environment:
+2. Start services individually:
    ```bash
    npm run dev
    ```
@@ -47,10 +78,27 @@ This will start:
 
 ### Available Scripts
 
+- `npm start` - Complete system startup with initialization
 - `npm run dev` - Start all services in development mode
 - `npm run build` - Build all services
 - `npm run down` - Stop all services
 - `npm run clean` - Stop services and remove volumes
+- `npm run restart` - Restart all services
+- `npm run logs` - View all service logs
+- `npm run status` - Check service status
+- `npm run monitor` - System monitoring and health checks
+
+### Login Credentials
+
+The system automatically creates these accounts on first startup:
+
+| Role | Email | Password | Permissions |
+|------|-------|----------|-------------|
+| **Admin** | `admin@example.com` | `admin123` | Full system access, user management, asset CRUD |
+| **Manager** | `manager@example.com` | `manager123` | Asset management, assignment, status updates |
+| **User** | `user@example.com` | `user123` | View assigned assets, basic dashboard access |
+
+**Start with the Admin account** to explore all features and create additional users.
 
 ## Docker Compose Usage
 
@@ -60,46 +108,40 @@ The development environment uses `docker-compose.yml` and is optimized for devel
 
 **Start development environment:**
 ```bash
-# Using npm script (recommended)
+# Complete system startup (recommended)
+npm start
+
+# Quick development mode (no health checks)
 npm run dev
 
-# If you get API version errors, try the legacy version
-npm run dev:legacy
-
-# Or directly with Docker Compose (newer syntax)
-docker compose up -d
-
-# Or with legacy Docker Compose (older syntax)
-docker-compose up -d
+# Manual startup (if Docker Compose has issues)
+npm run dev:manual
 ```
 
 **View logs:**
 ```bash
-# Using npm script
+# All services
 npm run logs
 
+# Individual services
+npm run logs:backend
+npm run logs:frontend  
+npm run logs:database
+
 # Or directly with Docker Compose
-docker compose logs -f
-
-# Specific service
-docker compose logs -f backend
-docker compose logs -f frontend
-docker compose logs -f database
-
-# Legacy syntax (if newer commands fail)
-docker-compose logs -f
+docker-compose logs -f [service-name]
 ```
 
 **Stop development environment:**
 ```bash
-# Using npm script
-npm run down
+# Clean shutdown
+npm stop
 
 # Or directly with Docker Compose
-docker compose down
-
-# Legacy syntax (if newer commands fail)
 docker-compose down
+
+# Complete cleanup (removes all data)
+npm run clean
 ```
 
 **Clean up (removes volumes and data):**
@@ -191,7 +233,8 @@ API_URL=https://api.your-domain.com
 
 **Run migrations:**
 ```bash
-# Development
+# Migrations run automatically on startup
+# Manual migration (if needed)
 docker-compose exec backend npm run prisma:migrate
 
 # Production
@@ -200,8 +243,8 @@ docker-compose -f docker-compose.prod.yml exec backend npm run prisma:migrate:pr
 
 **Access database:**
 ```bash
-# Development
-docker-compose exec database psql -U postgres -d asset_management
+# Development (service name is 'postgres' in docker-compose.yml)
+docker-compose exec postgres psql -U postgres -d asset_management
 
 # Production
 docker-compose -f docker-compose.prod.yml exec database psql -U postgres -d asset_management_prod

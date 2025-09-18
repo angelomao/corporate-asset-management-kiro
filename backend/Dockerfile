@@ -2,7 +2,7 @@
 FROM node:18-alpine AS base
 
 # Install OpenSSL and other dependencies for Prisma
-RUN apk add --no-cache openssl openssl-dev
+RUN apk add --no-cache openssl openssl-dev curl
 
 # Install dependencies only when needed
 FROM base AS deps

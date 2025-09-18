@@ -5,54 +5,110 @@ services:
     image: postgres:15-alpine
     container_name: asset-management-db
     environment:
-      POSTGRES_DB: asset_management
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-asset_management}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - asset-management-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: development
     container_name: asset-management-backend
     environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/asset_management
-      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - NODE_ENV=${NODE_ENV:-development}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-asset_management}
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-24h}
       - PORT=3001
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
     ports:
       - "3001:3001"
     volumes:
       - ./backend:/app
-      - /app/node_modules
+      - backend_node_modules:/app/node_modules
+      - ./logs:/app/logs
+    networks:
+      - asset-management-network
     depends_on:
       postgres:
         condition: service_healthy
-    command: npm run dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: >
+      sh -c "
+        echo 'Installing dependencies...' &&
+        npm install &&
+        echo 'Fixing bcrypt architecture compatibility...' &&
+        rm -rf node_modules/bcrypt &&
+        npm install bcrypt &&
+        echo 'Generating Prisma client...' &&
+        npm run prisma:generate &&
+        echo 'Running database migrations...' &&
+        npm run prisma:migrate &&
+        echo 'Seeding database...' &&
+        npm run prisma:seed || echo 'Seed already completed or failed' &&
+        echo 'Starting development server...' &&
+        npm run dev
+      "
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: development
     container_name: asset-management-frontend
     environment:
-      - VITE_API_URL=http://localhost:3001/api
+      - VITE_API_URL=${API_URL:-http://localhost:3001/api}
+      - VITE_NODE_ENV=${NODE_ENV:-development}
     ports:
       - "3000:3000"
     volumes:
       - ./frontend:/app
-      - /app/node_modules
+      - frontend_node_modules:/app/node_modules
+    networks:
+      - asset-management-network
     depends_on:
-      - backend
-    command: npm run dev -- --host 0.0.0.0
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: >
+      sh -c "
+        echo 'Installing dependencies...' &&
+        npm install &&
+        echo 'Starting development server...' &&
+        npm run dev -- --host 0.0.0.0
+      "
+
+networks:
+  asset-management-network:
+    driver: bridge
 
 volumes:
   postgres_data:
+  backend_node_modules:
+  frontend_node_modules:
