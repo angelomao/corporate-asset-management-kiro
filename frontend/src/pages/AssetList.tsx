@@ -720,28 +720,49 @@ export const AssetList: React.FC = () => {
                   </div>
                   
                   {canManageAssets && (
-                    <div className="ml-4 flex-shrink-0">
-                      {asset.status === 'AVAILABLE' ? (
-                        <Select
-                          value=""
-                          onChange={(e) => handleAssignAsset(asset.id, e.target.value || null)}
-                          options={[
-                            { value: '', label: 'Assign to...' },
-                            ...users.map(user => ({
-                              value: user.id,
-                              label: `${user.name} (${user.email})`
-                            }))
-                          ]}
-                          className="text-sm"
-                        />
-                      ) : asset.status === 'ASSIGNED' && asset.assignee ? (
+                    <div className="ml-4 flex-shrink-0 space-y-2">
+                      {/* Assignment Controls */}
+                      <div>
+                        {asset.status === 'AVAILABLE' ? (
+                          <Select
+                            value=""
+                            onChange={(e) => handleAssignAsset(asset.id, e.target.value || null)}
+                            options={[
+                              { value: '', label: 'Assign to...' },
+                              ...users.map(user => ({
+                                value: user.id,
+                                label: `${user.name} (${user.email})`
+                              }))
+                            ]}
+                            className="text-sm"
+                          />
+                        ) : asset.status === 'ASSIGNED' && asset.assignee ? (
+                          <Button
+                            onClick={() => handleAssignAsset(asset.id, null)}
+                            className="text-sm bg-orange-100 text-orange-800 hover:bg-orange-200"
+                          >
+                            Unassign
+                          </Button>
+                        ) : null}
+                      </div>
+                      
+                      {/* Edit and Delete Controls */}
+                      <div className="flex space-x-2">
                         <Button
-                          onClick={() => handleAssignAsset(asset.id, null)}
-                          className="text-sm bg-orange-100 text-orange-800 hover:bg-orange-200"
+                          onClick={() => handleEditAsset(asset)}
+                          className="text-xs bg-blue-100 text-blue-800 hover:bg-blue-200 px-2 py-1"
                         >
-                          Unassign
+                          Edit
                         </Button>
-                      ) : null}
+                        {user?.role === 'ADMIN' && (
+                          <Button
+                            onClick={() => setDeletingAsset(asset)}
+                            className="text-xs bg-red-100 text-red-800 hover:bg-red-200 px-2 py-1"
+                          >
+                            Delete
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -767,6 +788,45 @@ export const AssetList: React.FC = () => {
         isOpen={!!statusHistoryAsset}
         onClose={() => setStatusHistoryAsset(null)}
       />
+
+      {/* Delete Confirmation Modal */}
+      {deletingAsset && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Delete Asset
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete "{deletingAsset.name}"? This action cannot be undone.
+              {deletingAsset.assigneeId && (
+                <span className="block mt-2 text-red-600 font-medium">
+                  Warning: This asset is currently assigned to {deletingAsset.assignee?.name}. 
+                  Please unassign it first before deleting.
+                </span>
+              )}
+            </p>
+            <div className="flex justify-end space-x-3">
+              <Button
+                onClick={() => setDeletingAsset(null)}
+                className="bg-gray-300 text-gray-700 hover:bg-gray-400"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteAsset}
+                disabled={!!deletingAsset.assigneeId}
+                className={`${
+                  deletingAsset.assigneeId 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'bg-red-600 text-white hover:bg-red-700'
+                }`}
+              >
+                Delete Asset
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };export
