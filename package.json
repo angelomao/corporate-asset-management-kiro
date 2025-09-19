@@ -17,7 +17,9 @@
     "logs:frontend": "docker-compose logs -f frontend",
     "logs:database": "docker-compose logs -f postgres",
     "status": "docker-compose ps",
-    "monitor": "./scripts/monitor.sh status"
+    "monitor": "./scripts/monitor.sh status",
+    "deploy:ec2": "./scripts/deploy-ec2.sh",
+    "troubleshoot:ec2": "./scripts/ec2-troubleshoot.sh"
   },
   "keywords": ["asset-management", "corporate", "inventory"],
   "author": "",
