@@ -27,6 +27,8 @@ A comprehensive web application for tracking, managing, and maintaining corporat
 
 ### Quick Start
 
+#### 🚀 **Local Development**
+
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
@@ -48,6 +50,26 @@ A comprehensive web application for tracking, managing, and maintaining corporat
    - ✅ Display service URLs and login credentials
 
    **Startup time**: ~30-60 seconds (depending on your system)
+
+#### ☁️ **AWS EC2 Deployment**
+
+For production deployment on AWS EC2:
+
+```bash
+# Deploy to EC2 instance (production-optimized)
+npm run deploy:ec2
+
+# Troubleshoot connectivity issues
+npm run troubleshoot:ec2
+```
+
+**EC2 deployment features:**
+- ✅ **Production containers** with optimized builds and security
+- ✅ **Automatic IP detection** and environment configuration
+- ✅ **Security group validation** with setup guidance
+- ✅ **Health monitoring** and service verification
+- ✅ **SSL-ready** Nginx configuration for HTTPS
+- ✅ **Troubleshooting tools** for common deployment issues
 
 3. **Access the application**
    - **Frontend**: http://localhost:3000 (React application)
@@ -329,6 +351,82 @@ docker-compose -f docker-compose.prod.yml exec database psql -U postgres -d asse
    docker compose build --no-cache
    ```
 
+### AWS EC2 Deployment & Troubleshooting
+
+**Deploy to EC2:**
+```bash
+# One-command EC2 deployment
+npm run deploy:ec2
+```
+
+**Troubleshoot EC2 connectivity:**
+```bash
+# Diagnose common EC2 issues
+npm run troubleshoot:ec2
+```
+
+**Common EC2 Issues:**
+
+1. **Can't access frontend via public IP (Most Common):**
+   - **Problem**: AWS Security Group not configured
+   - **Solution**: Add inbound rules in EC2 Console:
+     - Port 3000 (Frontend): Custom TCP, Source: 0.0.0.0/0
+     - Port 3001 (Backend): Custom TCP, Source: 0.0.0.0/0
+     - Port 80 (HTTP): HTTP, Source: 0.0.0.0/0
+     - Port 443 (HTTPS): HTTPS, Source: 0.0.0.0/0
+
+2. **Services not binding to external interface:**
+   ```bash
+   # Check if services are running
+   docker ps
+   
+   # Check port bindings
+   netstat -tlnp | grep -E ':(3000|3001)'
+   
+   # Restart with production config
+   npm run deploy:ec2
+   ```
+
+3. **Firewall blocking connections:**
+   ```bash
+   # Check UFW status
+   sudo ufw status
+   
+   # Allow ports if needed
+   sudo ufw allow 3000
+   sudo ufw allow 3001
+   sudo ufw allow 80
+   sudo ufw allow 443
+   ```
+
+4. **Environment configuration issues:**
+   ```bash
+   # Check environment variables
+   cat .env.production
+   
+   # Verify public IP detection
+   curl -s http://169.254.169.254/latest/meta-data/public-ipv4
+   ```
+
+**EC2 Production Commands:**
+```bash
+# Check production status
+docker-compose -f docker-compose.prod.yml ps
+
+# View production logs
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Restart production services
+docker-compose -f docker-compose.prod.yml restart
+
+# Stop production
+docker-compose -f docker-compose.prod.yml down
+
+# Clean production restart
+docker-compose -f docker-compose.prod.yml down -v
+npm run deploy:ec2
+```
+
 **View container resource usage:**
 ```bash
 docker stats
@@ -346,6 +444,62 @@ docker compose exec frontend sh
 docker compose exec database bash
 ```
 
+## Quick Reference
+
+### 🚀 **Essential Commands**
+
+#### **Local Development**
+```bash
+# Start everything
+npm start
+
+# Stop everything  
+npm stop
+
+# View logs
+npm run logs
+
+# Check status
+npm run status
+
+# Clean restart
+npm run clean && npm start
+```
+
+#### **AWS EC2 Deployment**
+```bash
+# Deploy to EC2 (production)
+npm run deploy:ec2
+
+# Troubleshoot EC2 issues
+npm run troubleshoot:ec2
+
+# Check production status
+docker-compose -f docker-compose.prod.yml ps
+
+# View production logs
+docker-compose -f docker-compose.prod.yml logs -f
+```
+
+### 🔗 **Important URLs**
+- **Local Frontend**: http://localhost:3000
+- **Local Backend**: http://localhost:3001
+- **API Health**: http://localhost:3001/health
+- **EC2 Frontend**: http://YOUR_PUBLIC_IP:3000
+- **EC2 Backend**: http://YOUR_PUBLIC_IP:3001
+
+### 👤 **Default Accounts**
+- **Admin**: admin@example.com / admin123
+- **Manager**: manager@example.com / manager123
+- **User**: user@example.com / user123
+
+### 📚 **Additional Resources**
+- **Quick Start Guide**: [QUICK_START.md](./QUICK_START.md)
+- **Production Deployment**: [DEPLOYMENT.md](./DEPLOYMENT.md)
+- **Database Schema**: See `backend/prisma/schema.prisma`
+
+---
+
 ## Project Structure
 
 ```
@@ -361,7 +515,29 @@ The application is designed for containerized development. All services will aut
 
 ## Production Deployment
 
+### Local Production Testing
 For detailed production deployment instructions, security considerations, and advanced configuration options, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+### AWS EC2 Deployment
+For cloud deployment on AWS EC2:
+```bash
+npm run deploy:ec2
+```
+
+This provides:
+- ✅ **One-command deployment** with automatic configuration
+- ✅ **Production-optimized** Docker containers
+- ✅ **Security group validation** and troubleshooting
+- ✅ **Health monitoring** and service verification
+- ✅ **SSL-ready** configuration for HTTPS
+
+**Need help?** Run `npm run troubleshoot:ec2` for diagnostic tools and solutions.
+
+---
+
+**Ready to get started?** 
+- **Local development**: Run `npm start` and visit http://localhost:3000
+- **EC2 deployment**: Run `npm run deploy:ec2` and visit http://YOUR_PUBLIC_IP:3000
 
 ## License
 
