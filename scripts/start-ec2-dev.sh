@@ -1,32 +1,33 @@
 #!/bin/bash
 
-# EC2 Production Deployment Script
-# Optimized for AWS EC2 instances
+# EC2 Development Mode - Direct port access without nginx
+# This bypasses nginx complexity and exposes services directly
 
 set -e
 
-echo "🚀 Deploying Asset Management System to EC2"
-echo "============================================="
+echo "🚀 Starting Asset Management System in EC2 Development Mode"
+echo "==========================================================="
 
 # Get public IP for configuration
 PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo "localhost")
 echo "📍 Detected Public IP: $PUBLIC_IP"
 
-# Create production environment file
-echo "📝 Creating production environment..."
-cat > .env.production << EOF
-# Production Environment for EC2
-NODE_ENV=production
-DB_USER=postgres
-DB_PASSWORD=secure_password_$(date +%s)
-JWT_SECRET=super_secure_jwt_secret_$(openssl rand -hex 32)
+# Create development environment for EC2
+echo "📝 Creating EC2 development environment..."
+cat > .env << EOF
+# EC2 Development Environment
+NODE_ENV=development
+POSTGRES_DB=asset_management
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+JWT_SECRET=ec2_development_jwt_secret_$(openssl rand -hex 16)
 
-# URLs - Update these with your domain or IP
-FRONTEND_URL=http://$PUBLIC_IP
+# URLs for EC2
+FRONTEND_URL=http://$PUBLIC_IP:3000
 API_URL=http://$PUBLIC_IP:3001/api
 
 # Logging
-LOG_LEVEL=info
+LOG_LEVEL=debug
 EOF
 
 echo "✅ Environment file created"
@@ -37,16 +38,9 @@ docker-compose down 2>/dev/null || true
 docker-compose -f docker-compose.prod.yml down 2>/dev/null || true
 docker-compose -f docker-compose.ec2.yml down 2>/dev/null || true
 
-# Clean up old images (optional)
-echo "🧹 Cleaning up old images..."
-docker system prune -f
-
-# Build and start EC2-optimized containers
-echo "🏗️  Building EC2-optimized containers..."
-docker-compose -f docker-compose.ec2.yml build --no-cache
-
-echo "🚀 Starting EC2 services..."
-docker-compose -f docker-compose.ec2.yml up -d
+# Start development containers with explicit host binding
+echo "🚀 Starting development services with external access..."
+docker-compose up -d --build
 
 # Wait for services to be healthy
 echo "⏳ Waiting for services to be ready..."
@@ -72,10 +66,19 @@ for i in {1..12}; do
     sleep 10
 done
 
+# Test external connectivity
+echo ""
+echo "🔍 Testing external connectivity..."
+echo "Frontend test:"
+curl -s -o /dev/null -w "  Status: %{http_code}, Time: %{time_total}s\n" http://localhost:3000 || echo "  ❌ Frontend not accessible"
+
+echo "Backend test:"
+curl -s -o /dev/null -w "  Status: %{http_code}, Time: %{time_total}s\n" http://localhost:3001/health || echo "  ❌ Backend not accessible"
+
 # Show final status
 echo ""
-echo "🎉 Deployment Complete!"
-echo "======================="
+echo "🎉 EC2 Development Mode Started!"
+echo "================================="
 echo ""
 echo "📋 Service URLs:"
 echo "   🌐 Frontend:  http://$PUBLIC_IP:3000"
@@ -90,8 +93,12 @@ echo ""
 echo "🔐 IMPORTANT: Make sure your AWS Security Group allows:"
 echo "   - Port 3000 (Frontend)"
 echo "   - Port 3001 (Backend)"
-echo "   - Port 80 (HTTP)"
-echo "   - Port 443 (HTTPS)"
 echo ""
-echo "📊 Check status: docker-compose -f docker-compose.ec2.yml ps"
-echo "📋 View logs:    docker-compose -f docker-compose.ec2.yml logs -f"
+echo "📊 Check status: docker-compose ps"
+echo "📋 View logs:    docker-compose logs -f"
+echo ""
+echo "🔧 If you still can't access the frontend:"
+echo "   1. Check AWS Security Group inbound rules"
+echo "   2. Check if UFW firewall is blocking: sudo ufw status"
+echo "   3. Verify containers are running: docker ps"
+echo "   4. Check container logs: docker logs asset-management-frontend"

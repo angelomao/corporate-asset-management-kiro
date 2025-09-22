@@ -53,23 +53,27 @@ A comprehensive web application for tracking, managing, and maintaining corporat
 
 #### ☁️ **AWS EC2 Deployment**
 
-For production deployment on AWS EC2:
+For deployment on AWS EC2, we provide multiple options:
 
 ```bash
-# Deploy to EC2 instance (production-optimized)
+# Option 1: Simplified development mode (recommended for testing)
+npm run start:ec2-dev
+
+# Option 2: Production deployment with optimized containers
 npm run deploy:ec2
 
-# Troubleshoot connectivity issues
-npm run troubleshoot:ec2
+# Option 3: Comprehensive diagnostics and troubleshooting
+npm run debug:ec2
 ```
 
 **EC2 deployment features:**
-- ✅ **Production containers** with optimized builds and security
+- ✅ **Multiple deployment modes** - development and production options
 - ✅ **Automatic IP detection** and environment configuration
-- ✅ **Security group validation** with setup guidance
+- ✅ **Direct port access** - bypasses nginx complexity for easier setup
+- ✅ **Security group validation** with step-by-step guidance
+- ✅ **Comprehensive diagnostics** - detailed troubleshooting tools
 - ✅ **Health monitoring** and service verification
-- ✅ **SSL-ready** Nginx configuration for HTTPS
-- ✅ **Troubleshooting tools** for common deployment issues
+- ✅ **Firewall detection** - UFW and iptables analysis
 
 3. **Access the application**
    - **Frontend**: http://localhost:3000 (React application)
@@ -353,6 +357,36 @@ docker-compose -f docker-compose.prod.yml exec database psql -U postgres -d asse
 
 ### AWS EC2 Deployment & Troubleshooting
 
+#### **EC2 Deployment Modes**
+
+**🚀 Development Mode (Recommended for Testing):**
+```bash
+npm run start:ec2-dev
+```
+- ✅ **Direct port access** - No nginx complexity
+- ✅ **Automatic IP detection** and environment setup
+- ✅ **Hot reloading** for development
+- ✅ **Simple troubleshooting** - easier to debug
+- ✅ **Fast startup** - minimal container overhead
+
+**🏭 Production Mode:**
+```bash
+npm run deploy:ec2
+```
+- ✅ **Optimized containers** with production builds
+- ✅ **Security hardening** and performance tuning
+- ✅ **SSL-ready** configuration for HTTPS
+- ✅ **Resource optimization** for production workloads
+
+**🔍 Diagnostic Mode:**
+```bash
+npm run debug:ec2
+```
+- ✅ **Comprehensive analysis** of connectivity issues
+- ✅ **Container inspection** and network diagnostics
+- ✅ **Firewall detection** (UFW, iptables)
+- ✅ **Port binding analysis** and service health checks
+
 **Deploy to EC2:**
 ```bash
 # One-command EC2 deployment
@@ -365,66 +399,78 @@ npm run deploy:ec2
 npm run troubleshoot:ec2
 ```
 
-**Common EC2 Issues:**
+**Common EC2 Issues & Solutions:**
 
 1. **Can't access frontend via public IP (Most Common):**
-   - **Problem**: AWS Security Group not configured
-   - **Solution**: Add inbound rules in EC2 Console:
+   ```bash
+   # First, run comprehensive diagnostics
+   npm run debug:ec2
+   
+   # Try simplified development mode
+   npm run start:ec2-dev
+   ```
+   - **Root Cause**: Usually AWS Security Group or nginx configuration
+   - **Quick Fix**: Add inbound rules in EC2 Console:
      - Port 3000 (Frontend): Custom TCP, Source: 0.0.0.0/0
      - Port 3001 (Backend): Custom TCP, Source: 0.0.0.0/0
-     - Port 80 (HTTP): HTTP, Source: 0.0.0.0/0
-     - Port 443 (HTTPS): HTTPS, Source: 0.0.0.0/0
 
-2. **Services not binding to external interface:**
+2. **Nginx/SSL Configuration Issues:**
    ```bash
-   # Check if services are running
-   docker ps
+   # Use direct port access (bypasses nginx)
+   npm run start:ec2-dev
    
-   # Check port bindings
-   netstat -tlnp | grep -E ':(3000|3001)'
-   
-   # Restart with production config
-   npm run deploy:ec2
+   # This exposes services directly on ports 3000/3001
+   # No SSL certificates or nginx configuration needed
    ```
 
 3. **Firewall blocking connections:**
    ```bash
-   # Check UFW status
+   # Check and fix UFW firewall
    sudo ufw status
-   
-   # Allow ports if needed
    sudo ufw allow 3000
    sudo ufw allow 3001
-   sudo ufw allow 80
-   sudo ufw allow 443
-   ```
-
-4. **Environment configuration issues:**
-   ```bash
-   # Check environment variables
-   cat .env.production
    
-   # Verify public IP detection
-   curl -s http://169.254.169.254/latest/meta-data/public-ipv4
+   # Check iptables
+   sudo iptables -L INPUT -n | grep -E '(3000|3001)'
    ```
 
-**EC2 Production Commands:**
+4. **Container networking issues:**
+   ```bash
+   # Debug container connectivity
+   npm run debug:ec2
+   
+   # Check container logs
+   docker logs asset-management-frontend
+   docker logs asset-management-backend
+   
+   # Restart with clean slate
+   docker-compose down -v
+   npm run start:ec2-dev
+   ```
+
+**EC2 Management Commands:**
 ```bash
-# Check production status
-docker-compose -f docker-compose.prod.yml ps
+# Development mode (recommended for testing)
+npm run start:ec2-dev
 
-# View production logs
-docker-compose -f docker-compose.prod.yml logs -f
+# Check EC2 services status
+docker-compose -f docker-compose.ec2.yml ps
 
-# Restart production services
-docker-compose -f docker-compose.prod.yml restart
+# View EC2 logs
+docker-compose -f docker-compose.ec2.yml logs -f
 
-# Stop production
-docker-compose -f docker-compose.prod.yml down
+# Restart EC2 services
+docker-compose -f docker-compose.ec2.yml restart
 
-# Clean production restart
-docker-compose -f docker-compose.prod.yml down -v
-npm run deploy:ec2
+# Stop EC2 services
+docker-compose -f docker-compose.ec2.yml down
+
+# Clean restart
+docker-compose -f docker-compose.ec2.yml down -v
+npm run start:ec2-dev
+
+# Comprehensive diagnostics
+npm run debug:ec2
 ```
 
 **View container resource usage:**
@@ -468,17 +514,23 @@ npm run clean && npm start
 
 #### **AWS EC2 Deployment**
 ```bash
+# Start in EC2 development mode (recommended)
+npm run start:ec2-dev
+
 # Deploy to EC2 (production)
 npm run deploy:ec2
 
-# Troubleshoot EC2 issues
+# Debug connectivity issues
+npm run debug:ec2
+
+# General troubleshooting
 npm run troubleshoot:ec2
 
-# Check production status
-docker-compose -f docker-compose.prod.yml ps
+# Check EC2 production status
+docker-compose -f docker-compose.ec2.yml ps
 
-# View production logs
-docker-compose -f docker-compose.prod.yml logs -f
+# View EC2 logs
+docker-compose -f docker-compose.ec2.yml logs -f
 ```
 
 ### 🔗 **Important URLs**
@@ -519,25 +571,39 @@ The application is designed for containerized development. All services will aut
 For detailed production deployment instructions, security considerations, and advanced configuration options, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ### AWS EC2 Deployment
-For cloud deployment on AWS EC2:
+For cloud deployment on AWS EC2, choose the appropriate mode:
+
+**🚀 Quick Testing (Recommended):**
+```bash
+npm run start:ec2-dev
+```
+
+**🏭 Production Deployment:**
 ```bash
 npm run deploy:ec2
 ```
 
-This provides:
-- ✅ **One-command deployment** with automatic configuration
-- ✅ **Production-optimized** Docker containers
-- ✅ **Security group validation** and troubleshooting
-- ✅ **Health monitoring** and service verification
-- ✅ **SSL-ready** configuration for HTTPS
+**🔍 Troubleshooting:**
+```bash
+npm run debug:ec2
+```
 
-**Need help?** Run `npm run troubleshoot:ec2` for diagnostic tools and solutions.
+**Key features:**
+- ✅ **Multiple deployment modes** for different use cases
+- ✅ **Automatic IP detection** and environment configuration
+- ✅ **Comprehensive diagnostics** for connectivity issues
+- ✅ **Security group validation** with step-by-step guidance
+- ✅ **Direct port access** option to bypass nginx complexity
+- ✅ **Production optimization** with SSL-ready configuration
+
+**Need help?** The `debug:ec2` command provides detailed diagnostics and solutions.
 
 ---
 
 **Ready to get started?** 
 - **Local development**: Run `npm start` and visit http://localhost:3000
-- **EC2 deployment**: Run `npm run deploy:ec2` and visit http://YOUR_PUBLIC_IP:3000
+- **EC2 testing**: Run `npm run start:ec2-dev` and visit http://YOUR_PUBLIC_IP:3000
+- **EC2 production**: Run `npm run deploy:ec2` and visit http://YOUR_PUBLIC_IP:3000
 
 ## License
 
