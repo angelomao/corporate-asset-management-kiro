@@ -21,7 +21,9 @@
     "deploy:ec2": "./scripts/deploy-ec2.sh",
     "start:ec2-dev": "./scripts/start-ec2-dev.sh",
     "troubleshoot:ec2": "./scripts/ec2-troubleshoot.sh",
-    "debug:ec2": "./scripts/debug-ec2-access.sh"
+    "debug:ec2": "./scripts/debug-ec2-access.sh",
+    "debug:login": "./scripts/debug-login.sh",
+    "fix:login": "./scripts/fix-login.sh"
   },
   "keywords": ["asset-management", "corporate", "inventory"],
   "author": "",
