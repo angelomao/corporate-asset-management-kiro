@@ -23,7 +23,9 @@
     "troubleshoot:ec2": "./scripts/ec2-troubleshoot.sh",
     "debug:ec2": "./scripts/debug-ec2-access.sh",
     "debug:login": "./scripts/debug-login.sh",
-    "fix:login": "./scripts/fix-login.sh"
+    "fix:login": "./scripts/fix-login.sh",
+    "fix:ec2-login": "./scripts/fix-ec2-login.sh",
+    "setup:ec2": "./scripts/setup-ec2-environment.sh"
   },
   "keywords": ["asset-management", "corporate", "inventory"],
   "author": "",
