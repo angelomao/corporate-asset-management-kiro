@@ -4,19 +4,69 @@ A comprehensive web application for tracking, managing, and maintaining corporat
 
 ## Features
 
-- Role-based access control (Admin, Manager, User)
-- Asset lifecycle management
-- Asset assignment and tracking
-- Dashboard with statistics and reporting
-- Search and filtering capabilities
-- Responsive web interface
+### 🎯 **Core Functionality**
+- **Complete Asset CRUD**: Create, read, update, and delete assets with validation
+- **Role-Based Access Control**: Admin, Manager, and User roles with appropriate permissions
+- **Asset Assignment**: Assign/unassign assets to users with status tracking
+- **Status Management**: Track asset lifecycle (Available, Assigned, Maintenance, Retired, Lost)
+- **Advanced Search**: Multi-field search with filters (category, status, assignee, location)
+- **Audit Trail**: Complete history of asset status changes with timestamps
+
+### 🔐 **Security & Authentication**
+- **JWT Authentication**: Secure token-based authentication system
+- **Password Hashing**: bcrypt encryption for secure password storage
+- **Rate Limiting**: API protection against abuse and brute force attacks
+- **Input Validation**: Comprehensive validation on both frontend and backend
+- **CORS Protection**: Properly configured cross-origin resource sharing
+
+### 🎨 **User Experience**
+- **Responsive Design**: Mobile-friendly interface that works on all devices
+- **Real-time Updates**: Live updates for asset status and assignment changes
+- **Error Handling**: User-friendly error messages and validation feedback
+- **Loading States**: Clear feedback during data operations
+- **Pagination**: Efficient handling of large asset lists
+
+### 🔧 **Production Ready**
+- **Health Monitoring**: Built-in health checks and system monitoring
+- **Logging System**: Comprehensive logging with Winston for debugging
+- **Database Migrations**: Automatic schema updates and data seeding
+- **Docker Containerization**: Fully containerized with optimized builds
+- **Environment Configuration**: Flexible configuration for different environments
 
 ## Technology Stack
 
-- **Frontend**: React 18 with TypeScript, Tailwind CSS, React Router, React Query
-- **Backend**: Node.js with Express, TypeScript, JWT authentication
-- **Database**: PostgreSQL with Prisma ORM
-- **Development**: Docker Compose for containerized development environment
+### Frontend
+- **React 18** with TypeScript for type-safe UI development
+- **Vite** for fast development server and optimized production builds
+- **Tailwind CSS** for responsive, utility-first styling
+- **React Query** for efficient data fetching, caching, and synchronization
+- **React Hook Form** with Zod validation for robust form handling
+- **React Router** for client-side routing and navigation
+- **Code Splitting** with lazy loading for optimized bundle sizes
+
+### Backend
+- **Node.js** with Express.js for RESTful API development
+- **TypeScript** for comprehensive type safety and better developer experience
+- **Prisma ORM** with PostgreSQL for type-safe database operations
+- **JWT Authentication** with secure token management
+- **bcrypt** for secure password hashing with architecture compatibility
+- **Winston** for structured logging and monitoring
+- **Helmet** for security headers and CORS protection
+- **Express Rate Limit** for API protection and abuse prevention
+
+### Database
+- **PostgreSQL 15** with Alpine Linux for lightweight, reliable data storage
+- **Prisma Migrations** for version-controlled schema management
+- **Automatic Seeding** for development and testing data
+- **Health Checks** for database connectivity monitoring
+
+### DevOps & Infrastructure
+- **Docker** with multi-stage builds for optimized containerization
+- **Docker Compose** with health checks and dependency management
+- **Named Volumes** for persistent data and development efficiency
+- **Automated Startup Scripts** for reliable system initialization
+- **Production Deployment** configurations with Nginx and SSL
+- **Monitoring Scripts** for system health and maintenance
 
 ## Getting Started
 
@@ -53,27 +103,26 @@ A comprehensive web application for tracking, managing, and maintaining corporat
 
 #### ☁️ **AWS EC2 Deployment**
 
-For deployment on AWS EC2, we provide multiple options:
+For deployment on AWS EC2, we provide comprehensive setup and troubleshooting tools:
 
 ```bash
-# Option 1: Simplified development mode (recommended for testing)
-npm run start:ec2-dev
+# Complete EC2 setup (recommended - fixes all common issues)
+npm run setup:ec2
 
-# Option 2: Production deployment with optimized containers
-npm run deploy:ec2
-
-# Option 3: Comprehensive diagnostics and troubleshooting
-npm run debug:ec2
+# Quick fixes for specific issues
+npm run fix:ec2-login      # Fix login/API connectivity issues
+npm run start:ec2-dev      # Simplified development mode
+npm run deploy:ec2         # Production deployment
+npm run debug:ec2          # Comprehensive diagnostics
 ```
 
-**EC2 deployment features:**
-- ✅ **Multiple deployment modes** - development and production options
-- ✅ **Automatic IP detection** and environment configuration
-- ✅ **Direct port access** - bypasses nginx complexity for easier setup
-- ✅ **Security group validation** with step-by-step guidance
-- ✅ **Comprehensive diagnostics** - detailed troubleshooting tools
-- ✅ **Health monitoring** and service verification
+**Key features:**
+- ✅ **Automatic environment setup** - detects public IP and configures all services
+- ✅ **CORS configuration** - automatically allows external access
+- ✅ **Login troubleshooting** - fixes frontend API connectivity issues
+- ✅ **Security group validation** with AWS console guidance
 - ✅ **Firewall detection** - UFW and iptables analysis
+- ✅ **Health monitoring** - comprehensive service verification
 
 3. **Access the application**
    - **Frontend**: http://localhost:3000 (React application)
@@ -104,15 +153,21 @@ This will start:
 
 ### Available Scripts
 
+#### **Local Development**
 - `npm start` - Complete system startup with initialization
-- `npm run dev` - Start all services in development mode
-- `npm run build` - Build all services
-- `npm run down` - Stop all services
+- `npm stop` - Stop all services
 - `npm run clean` - Stop services and remove volumes
 - `npm run restart` - Restart all services
 - `npm run logs` - View all service logs
 - `npm run status` - Check service status
-- `npm run monitor` - System monitoring and health checks
+
+#### **AWS EC2 Deployment**
+- `npm run setup:ec2` - Complete EC2 environment setup
+- `npm run fix:ec2-login` - Fix login/API connectivity issues
+- `npm run start:ec2-dev` - Start in EC2 development mode
+- `npm run deploy:ec2` - Production EC2 deployment
+- `npm run debug:ec2` - EC2 connectivity diagnostics
+- `npm run debug:login` - Login-specific troubleshooting
 
 ### Login Credentials
 
@@ -355,109 +410,7 @@ docker-compose -f docker-compose.prod.yml exec database psql -U postgres -d asse
    docker compose build --no-cache
    ```
 
-### AWS EC2 Deployment & Troubleshooting
 
-#### **EC2 Deployment Modes**
-
-**🚀 Development Mode (Recommended for Testing):**
-```bash
-npm run start:ec2-dev
-```
-- ✅ **Direct port access** - No nginx complexity
-- ✅ **Automatic IP detection** and environment setup
-- ✅ **Hot reloading** for development
-- ✅ **Simple troubleshooting** - easier to debug
-- ✅ **Fast startup** - minimal container overhead
-
-**🏭 Production Mode:**
-```bash
-npm run deploy:ec2
-```
-- ✅ **Optimized containers** with production builds
-- ✅ **Security hardening** and performance tuning
-- ✅ **SSL-ready** configuration for HTTPS
-- ✅ **Resource optimization** for production workloads
-
-**🔍 Diagnostic Mode:**
-```bash
-npm run debug:ec2
-```
-- ✅ **Comprehensive analysis** of connectivity issues
-- ✅ **Container inspection** and network diagnostics
-- ✅ **Firewall detection** (UFW, iptables)
-- ✅ **Port binding analysis** and service health checks
-
-**Deploy to EC2:**
-```bash
-# One-command EC2 deployment
-npm run deploy:ec2
-```
-
-**Troubleshoot EC2 connectivity:**
-```bash
-# Diagnose common EC2 issues
-npm run troubleshoot:ec2
-```
-
-**Common EC2 Issues & Solutions:**
-
-1. **Can't access frontend via public IP (Most Common):**
-   ```bash
-   # First, run comprehensive diagnostics
-   npm run debug:ec2
-   
-   # Try simplified development mode
-   npm run start:ec2-dev
-   ```
-   - **Root Cause**: Usually AWS Security Group or nginx configuration
-   - **Quick Fix**: Add inbound rules in EC2 Console:
-     - Port 3000 (Frontend): Custom TCP, Source: 0.0.0.0/0
-     - Port 3001 (Backend): Custom TCP, Source: 0.0.0.0/0
-
-2. **Nginx/SSL Configuration Issues:**
-   ```bash
-   # Use direct port access (bypasses nginx)
-   npm run start:ec2-dev
-   
-   # This exposes services directly on ports 3000/3001
-   # No SSL certificates or nginx configuration needed
-   ```
-
-3. **Firewall blocking connections:**
-   ```bash
-   # Check and fix UFW firewall
-   sudo ufw status
-   sudo ufw allow 3000
-   sudo ufw allow 3001
-   
-   # Check iptables
-   sudo iptables -L INPUT -n | grep -E '(3000|3001)'
-   ```
-
-4. **Container networking issues:**
-   ```bash
-   # Debug container connectivity
-   npm run debug:ec2
-   
-   # Check container logs
-   docker logs asset-management-frontend
-   docker logs asset-management-backend
-   
-   # Restart with clean slate
-   docker-compose down -v
-   npm run start:ec2-dev
-   ```
-
-**EC2 Management Commands:**
-```bash
-# Development mode (recommended for testing)
-npm run start:ec2-dev
-
-# Check EC2 services status
-docker-compose -f docker-compose.ec2.yml ps
-
-# View EC2 logs
-docker-compose -f docker-compose.ec2.yml logs -f
 
 # Restart EC2 services
 docker-compose -f docker-compose.ec2.yml restart
@@ -514,23 +467,21 @@ npm run clean && npm start
 
 #### **AWS EC2 Deployment**
 ```bash
-# Start in EC2 development mode (recommended)
-npm run start:ec2-dev
+# Complete EC2 setup (recommended)
+npm run setup:ec2
 
-# Deploy to EC2 (production)
-npm run deploy:ec2
+# Quick fixes
+npm run fix:ec2-login      # Fix login issues
+npm run start:ec2-dev      # Development mode
+npm run deploy:ec2         # Production mode
 
-# Debug connectivity issues
-npm run debug:ec2
+# Diagnostics
+npm run debug:ec2          # General EC2 issues
+npm run debug:login        # Login-specific issues
 
-# General troubleshooting
-npm run troubleshoot:ec2
-
-# Check EC2 production status
-docker-compose -f docker-compose.ec2.yml ps
-
-# View EC2 logs
-docker-compose -f docker-compose.ec2.yml logs -f
+# Management
+docker-compose ps          # Check status
+docker-compose logs -f     # View logs
 ```
 
 ### 🔗 **Important URLs**
@@ -548,7 +499,9 @@ docker-compose -f docker-compose.ec2.yml logs -f
 ### 📚 **Additional Resources**
 - **Quick Start Guide**: [QUICK_START.md](./QUICK_START.md)
 - **Production Deployment**: [DEPLOYMENT.md](./DEPLOYMENT.md)
-- **Database Schema**: See `backend/prisma/schema.prisma`
+- **Database Schema**: `backend/prisma/schema.prisma`
+- **EC2 Setup**: Run `npm run setup:ec2` for complete configuration
+- **Troubleshooting**: Run `npm run debug:ec2` or `npm run debug:login`
 
 ---
 
@@ -567,43 +520,20 @@ The application is designed for containerized development. All services will aut
 
 ## Production Deployment
 
-### Local Production Testing
 For detailed production deployment instructions, security considerations, and advanced configuration options, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ### AWS EC2 Deployment
-For cloud deployment on AWS EC2, choose the appropriate mode:
-
-**🚀 Quick Testing (Recommended):**
+For cloud deployment on AWS EC2:
 ```bash
-npm run start:ec2-dev
+npm run setup:ec2    # Complete setup (recommended)
+npm run deploy:ec2   # Production deployment
 ```
-
-**🏭 Production Deployment:**
-```bash
-npm run deploy:ec2
-```
-
-**🔍 Troubleshooting:**
-```bash
-npm run debug:ec2
-```
-
-**Key features:**
-- ✅ **Multiple deployment modes** for different use cases
-- ✅ **Automatic IP detection** and environment configuration
-- ✅ **Comprehensive diagnostics** for connectivity issues
-- ✅ **Security group validation** with step-by-step guidance
-- ✅ **Direct port access** option to bypass nginx complexity
-- ✅ **Production optimization** with SSL-ready configuration
-
-**Need help?** The `debug:ec2` command provides detailed diagnostics and solutions.
 
 ---
 
 **Ready to get started?** 
-- **Local development**: Run `npm start` and visit http://localhost:3000
-- **EC2 testing**: Run `npm run start:ec2-dev` and visit http://YOUR_PUBLIC_IP:3000
-- **EC2 production**: Run `npm run deploy:ec2` and visit http://YOUR_PUBLIC_IP:3000
+- **Local**: `npm start` → http://localhost:3000
+- **EC2**: `npm run setup:ec2` → http://YOUR_PUBLIC_IP:3000
 
 ## License
 
