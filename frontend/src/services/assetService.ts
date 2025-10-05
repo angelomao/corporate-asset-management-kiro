@@ -59,4 +59,16 @@ export const assetService = {
   deleteAsset: async (id: string): Promise<void> => {
     await api.delete(`/assets/${id}`);
   },
+
+  // Generate QR code for an asset
+  generateQRCode: async (id: string): Promise<{ qrCode: string; asset: any }> => {
+    const response = await api.get(`/qrcode/asset/${id}`);
+    return response.data;
+  },
+
+  // Process scanned QR code
+  scanQRCode: async (data: string): Promise<{ action: string; asset?: Asset; assetData?: any }> => {
+    const response = await api.post('/qrcode/scan', { data });
+    return response.data;
+  },
 };

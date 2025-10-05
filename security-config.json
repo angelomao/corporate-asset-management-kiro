@@ -1,0 +1,63 @@
+{
+  "security": {
+    "scanning": {
+      "enabled": true,
+      "schedule": "daily",
+      "tools": ["trivy", "docker-scout"],
+      "severity_threshold": "HIGH",
+      "auto_fix_critical": true,
+      "auto_fix_high": false
+    },
+    "policies": {
+      "base_images": {
+        "allowed_registries": [
+          "docker.io",
+          "gcr.io",
+          "public.ecr.aws"
+        ],
+        "required_tags": ["alpine", "slim"],
+        "prohibited_tags": ["latest"],
+        "max_age_days": 90
+      },
+      "packages": {
+        "auto_update_security": true,
+        "block_vulnerable_packages": true,
+        "require_security_patches": true
+      },
+      "runtime": {
+        "run_as_non_root": true,
+        "read_only_filesystem": false,
+        "drop_capabilities": ["ALL"],
+        "add_capabilities": []
+      }
+    },
+    "notifications": {
+      "critical_vulnerabilities": {
+        "enabled": true,
+        "channels": ["slack", "email"],
+        "immediate": true
+      },
+      "scan_completion": {
+        "enabled": true,
+        "channels": ["slack"],
+        "immediate": false
+      },
+      "fix_completion": {
+        "enabled": true,
+        "channels": ["slack", "email"],
+        "immediate": true
+      }
+    },
+    "reporting": {
+      "format": "markdown",
+      "include_remediation": true,
+      "include_risk_assessment": true,
+      "retention_days": 90
+    }
+  },
+  "compliance": {
+    "standards": ["CIS", "NIST", "OWASP"],
+    "audit_trail": true,
+    "evidence_collection": true
+  }
+}

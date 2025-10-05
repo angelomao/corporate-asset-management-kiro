@@ -1,0 +1,61 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "uvx",
+      "args": ["mcp-server-filesystem", "--", "/Users/angelomao/mykiroproject"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": true,
+      "autoApprove": ["read_file", "list_directory"]
+    },
+    "brave-search": {
+      "command": "uvx",
+      "args": ["mcp-server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "your-brave-api-key-here",
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": true,
+      "autoApprove": []
+    },
+    "github": {
+      "command": "uvx",
+      "args": ["github-mcp-server"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your-github-token-here",
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": true,
+      "autoApprove": ["search_repositories", "get_file_contents"]
+    },
+    "aws-docs": {
+      "command": "uvx",
+      "args": ["awslabs.aws-documentation-mcp-server@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": false,
+      "autoApprove": ["mcp_aws_docs_search_documentation", "mcp_aws_docs_read_documentation"]
+    },
+    "filesystem": {
+      "command": "uvx",
+      "args": ["mcp-server-filesystem", "--", "/Users/angelomao/mykiroproject"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": true,
+      "autoApprove": ["read_file", "list_directory"]
+    },
+    "github": {
+      "command": "uvx",
+      "args": ["github-mcp-server"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your-github-token-here",
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": true,
+      "autoApprove": ["search_repositories", "get_file_contents"]
+    }
+  }
+}

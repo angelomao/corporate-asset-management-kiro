@@ -10,6 +10,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const AssetList = lazy(() => import('./pages/AssetList'));
 const UserProfile = lazy(() => import('./pages/UserProfile'));
 const UserList = lazy(() => import('./pages/UserList'));
+const QRCodeGenerator = lazy(() => import('./pages/QRCodeGenerator'));
 
 // Loading component
 const LoadingSpinner: React.FC = () => (
@@ -79,6 +80,18 @@ const App: React.FC = () => {
                         <ErrorBoundary>
                           <Suspense fallback={<LoadingSpinner />}>
                             <UserList />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="qr-generator" 
+                    element={
+                      <ProtectedRoute requiredRole="MANAGER">
+                        <ErrorBoundary>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <QRCodeGenerator />
                           </Suspense>
                         </ErrorBoundary>
                       </ProtectedRoute>

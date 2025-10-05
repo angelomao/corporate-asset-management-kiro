@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import assetRoutes from './routes/assets';
+import qrcodeRoutes from './routes/qrcode';
 import healthRoutes from './routes/health';
 import { errorHandler, sanitizeInput } from './middleware/errorHandler';
 import { requestLogger, performanceMonitor, metricsMiddleware } from './middleware/monitoring';
@@ -129,6 +130,7 @@ app.use(sanitizeInput);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/assets', assetRoutes);
+app.use('/api/qrcode', qrcodeRoutes);
 app.use('/health', healthRoutes);
 
 // 404 handler

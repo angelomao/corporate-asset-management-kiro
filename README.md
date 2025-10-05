@@ -6,6 +6,8 @@ A comprehensive web application for tracking, managing, and maintaining corporat
 
 ### 🎯 **Core Functionality**
 - **Complete Asset CRUD**: Create, read, update, and delete assets with validation
+- **QR Code Registration**: Scan QR codes to quickly register devices and access asset information
+- **QR Code Generation**: Generate, download, and print QR codes for asset labeling
 - **Role-Based Access Control**: Admin, Manager, and User roles with appropriate permissions
 - **Asset Assignment**: Assign/unassign assets to users with status tracking
 - **Status Management**: Track asset lifecycle (Available, Assigned, Maintenance, Retired, Lost)

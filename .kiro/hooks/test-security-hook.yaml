@@ -1,0 +1,16 @@
+name: "Test Security Hook"
+description: "Simple test hook for security automation"
+version: "1.0.0"
+
+triggers:
+  - name: "test_manual"
+    type: "manual"
+    button_text: "🧪 Test Security"
+    description: "Test the security automation system"
+
+actions:
+  - name: "test_scan"
+    type: "shell"
+    command: "echo '🛡️ Testing Docker security automation...' && ./scripts/security-scan.sh"
+    description: "Run a test security scan"
+    timeout: 300

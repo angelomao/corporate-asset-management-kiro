@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Card, Button, Input, Select, StatusBadge, StatusManager, StatusHistory, ErrorDisplay, FieldError, AdvancedSearch, Pagination } from '../components/ui';
+import { Card, Button, Input, Select, StatusBadge, StatusManager, StatusHistory, ErrorDisplay, FieldError, AdvancedSearch, Pagination, QRCodeDisplay, QRScanner } from '../components/ui';
 import { useAuth } from '../contexts/AuthContext';
 import { assetService } from '../services/assetService';
 import { userService, UserWithAssetCount } from '../services/userService';
@@ -78,6 +78,8 @@ export const AssetList: React.FC = () => {
   const [statusHistoryAsset, setStatusHistoryAsset] = useState<{ id: string; name: string } | null>(null);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
+  const [qrCodeAsset, setQrCodeAsset] = useState<{ id: string; name: string } | null>(null);
+  const [showQRScanner, setShowQRScanner] = useState(false);
 
   // Debounced search terms for better performance
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -340,6 +342,73 @@ export const AssetList: React.FC = () => {
     setStatusHistoryAsset({ id: asset.id, name: asset.name });
   };
 
+  // Handle showing QR code
+  const handleShowQRCode = (asset: Asset) => {
+    setQrCodeAsset({ id: asset.id, name: asset.name });
+  };
+
+  // Handle QR code scan
+  const handleQRScan = async (data: string) => {
+    try {
+      console.log('=== QR SCAN DEBUG ===');
+      console.log('1. Raw scanned data:', data);
+      console.log('2. Data type:', typeof data);
+      console.log('3. Data length:', data.length);
+      
+      // Try to parse to see if it's valid JSON
+      try {
+        const parsed = JSON.parse(data);
+        console.log('4. Parsed data:', parsed);
+      } catch (e) {
+        console.log('4. Data is not valid JSON:', e);
+      }
+      
+      console.log('5. Sending to backend...');
+      const result = await assetService.scanQRCode(data);
+      console.log('6. Backend response:', result);
+      
+      if (result.action === 'existing') {
+        // Show existing asset details
+        setShowQRScanner(false);
+        if (result.asset) {
+          alert(`Asset found: ${result.asset.name}`);
+        }
+      } else if (result.action === 'register') {
+        // Pre-fill form with scanned data
+        setShowQRScanner(false);
+        console.log('7. Pre-filling form with:', result.assetData);
+        
+        const newFormData = {
+          name: result.assetData?.name || '',
+          description: '',
+          serialNumber: result.assetData?.serialNumber || result.assetData?.serialnumber || '',
+          category: (result.assetData?.category?.toUpperCase() || 'HARDWARE') as AssetCategory,
+          purchaseDate: '',
+          purchasePrice: result.assetData?.purchasePrice ? result.assetData.purchasePrice.toString() : '',
+          vendor: result.assetData?.vendor || '',
+          location: result.assetData?.location || '',
+        };
+        
+        console.log('8. Setting form data to:', newFormData);
+        setFormData(newFormData);
+        setShowCreateForm(true);
+        console.log('9. Form should now be visible with pre-filled data');
+      }
+    } catch (err: any) {
+      console.error('=== QR SCAN ERROR ===');
+      console.error('Error details:', err);
+      console.error('Error response:', err.response);
+      console.error('Error message:', err.message);
+      
+      const formattedError = handleApiError(err, 'Scan QR Code');
+      setError(formattedError);
+      setShowQRScanner(false);
+      
+      // Show user-friendly alert
+      alert(`QR Scan Failed: ${formattedError.message}\n\nCheck console for details.`);
+    }
+  };
+
   // Handle error retry
   const handleRetry = () => {
     setError(null);
@@ -512,9 +581,20 @@ export const AssetList: React.FC = () => {
           </p>
         </div>
         {canManageAssets && (
-          <Button onClick={() => setShowCreateForm(true)}>
-            Add Asset
-          </Button>
+          <div className="flex space-x-3">
+            <Button 
+              onClick={() => setShowQRScanner(true)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <svg className="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+              </svg>
+              Scan QR
+            </Button>
+            <Button onClick={() => setShowCreateForm(true)}>
+              Add Asset
+            </Button>
+          </div>
         )}
       </div>
 
@@ -683,6 +763,12 @@ export const AssetList: React.FC = () => {
                       >
                         History
                       </Button>
+                      <Button
+                        onClick={() => handleShowQRCode(asset)}
+                        className="text-xs bg-blue-100 text-blue-600 hover:bg-blue-200 px-2 py-1"
+                      >
+                        QR Code
+                      </Button>
                     </div>
                     
                     {asset.description && (
@@ -788,6 +874,24 @@ export const AssetList: React.FC = () => {
         isOpen={!!statusHistoryAsset}
         onClose={() => setStatusHistoryAsset(null)}
       />
+
+      {/* QR Code Display Modal */}
+      {qrCodeAsset && (
+        <QRCodeDisplay
+          assetId={qrCodeAsset.id}
+          assetName={qrCodeAsset.name}
+          onClose={() => setQrCodeAsset(null)}
+        />
+      )}
+
+      {/* QR Scanner Modal */}
+      {showQRScanner && (
+        <QRScanner
+          onScan={handleQRScan}
+          onError={(error) => setError({ type: 'unknown', message: error })}
+          onClose={() => setShowQRScanner(false)}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       {deletingAsset && (

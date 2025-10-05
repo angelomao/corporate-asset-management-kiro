@@ -1,0 +1,184 @@
+# Docker Security Automation Hook
+# Automatically scans and fixes Docker vulnerabilities
+
+name: "Docker Security Automation"
+description: "Automated vulnerability scanning and fixing for Docker images"
+version: "1.0.0"
+
+# Multiple triggers for comprehensive coverage
+triggers:
+  # Manual trigger for on-demand scanning
+  - name: "manual_security_scan"
+    type: "manual"
+    button_text: "🛡️ Security Scan & Fix"
+    button_color: "red"
+    description: "Run comprehensive security scan and auto-fix critical issues"
+    
+  # Automatic trigger when Dockerfiles are modified
+  - name: "dockerfile_changed"
+    type: "file_save"
+    patterns:
+      - "**/Dockerfile"
+      - "**/Dockerfile.*"
+      - "docker-compose*.yml"
+    description: "Auto-scan when Docker configuration changes"
+    
+  # Scheduled daily security scan
+  - name: "daily_security_scan"
+    type: "schedule"
+    cron: "0 9 * * *"  # 9 AM daily
+    description: "Daily automated security scan"
+
+# Actions to perform
+actions:
+  # Step 1: Pre-scan preparation
+  - name: "prepare_scan"
+    type: "shell"
+    command: |
+      echo "🔍 Preparing Docker security scan..."
+      mkdir -p security-reports
+      docker system prune -f
+    description: "Prepare environment for security scanning"
+    
+  # Step 2: Run vulnerability scan
+  - name: "vulnerability_scan"
+    type: "shell"
+    command: "./scripts/security-scan.sh"
+    description: "Scan Docker images for vulnerabilities"
+    timeout: 600  # 10 minutes
+    retry_count: 2
+    
+  # Step 3: Auto-fix critical issues (only if critical vulnerabilities found)
+  - name: "auto_fix_critical"
+    type: "shell"
+    command: "./scripts/auto-security-fix.sh"
+    description: "Automatically fix critical security issues"
+    condition: "previous_step_failed"  # Only run if scan found critical issues
+    timeout: 900  # 15 minutes
+    
+  # Step 4: Re-scan after fixes
+  - name: "verify_fixes"
+    type: "shell"
+    command: "./scripts/security-scan.sh"
+    description: "Verify that security fixes were successful"
+    condition: "auto_fix_critical_completed"
+    timeout: 600
+    
+  # Step 5: Run tests to ensure functionality
+  - name: "test_after_fixes"
+    type: "shell"
+    command: |
+      echo "🧪 Testing application after security fixes..."
+      npm run test || echo "Tests failed - manual review needed"
+    description: "Test application functionality after security fixes"
+    condition: "verify_fixes_completed"
+    
+  # Step 6: Generate security report
+  - name: "generate_report"
+    type: "ai_task"
+    prompt: |
+      Analyze the security scan results in the security-reports directory and create a comprehensive security report.
+      Include:
+      1. Summary of vulnerabilities found and fixed
+      2. Risk assessment
+      3. Recommendations for future security improvements
+      4. Action items for the development team
+      
+      Format the report in markdown and save it as security-reports/security-summary.md
+    description: "Generate comprehensive security report"
+    
+  # Step 7: Notify team
+  - name: "notify_team"
+    type: "notification"
+    message: |
+      🛡️ Docker Security Scan Completed
+      
+      {% if critical_vulnerabilities > 0 %}
+      ⚠️ Found {{ critical_vulnerabilities }} critical vulnerabilities
+      🔧 Auto-fix attempted - please review results
+      {% else %}
+      ✅ No critical vulnerabilities found
+      {% endif %}
+      
+      📊 Full report: security-reports/security-summary.md
+    channels: ["slack", "email"]
+    description: "Notify team of security scan results"
+
+# Configuration options
+config:
+  # Severity levels to auto-fix
+  auto_fix_severities:
+    - "CRITICAL"
+    - "HIGH"
+  
+  # Maximum time to spend on auto-fixes
+  max_fix_time: 1800  # 30 minutes
+  
+  # Whether to automatically rebuild images
+  auto_rebuild: true
+  
+  # Whether to run tests after fixes
+  run_tests_after_fix: true
+  
+  # Notification settings
+  notifications:
+    on_critical_found: true
+    on_fix_completed: true
+    on_scan_failed: true
+
+# Error handling
+error_handling:
+  retry_count: 3
+  retry_delay: 60  # seconds
+  continue_on_error: false
+  fallback_actions:
+    - type: "notification"
+      message: "🚨 Security scan failed - manual intervention required"
+    - type: "create_issue"
+      title: "Security Scan Failure"
+      body: "Automated security scan failed. Please investigate."
+
+# Conditions for when to run
+conditions:
+  # Only run on main branch for scheduled scans
+  branch_filter:
+    - "main"
+    - "master"
+    - "develop"
+  
+  # Skip if no Docker files present
+  file_exists:
+    - "Dockerfile"
+    - "docker-compose.yml"
+  
+  # Skip if Docker is not running
+  docker_available: true
+
+# Outputs and artifacts
+outputs:
+  - name: "security_reports"
+    path: "security-reports/"
+    type: "directory"
+    description: "Security scan reports and analysis"
+    
+  - name: "fixed_dockerfiles"
+    path: "**/*.backup.*"
+    type: "files"
+    description: "Backup of original Dockerfiles before fixes"
+
+# Integration with other tools
+integrations:
+  # Slack notifications
+  slack:
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+    channel: "#security"
+    
+  # JIRA issue creation for critical vulnerabilities
+  jira:
+    project_key: "SEC"
+    issue_type: "Security"
+    
+  # GitHub security advisories
+  github:
+    create_security_advisory: true
+    assign_to_security_team: true

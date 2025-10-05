@@ -30,6 +30,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     // Add admin/manager only items
     if (user?.role === 'ADMIN' || user?.role === 'MANAGER') {
       baseItems.splice(2, 0, { path: '/users', label: 'Users', icon: '👥' });
+      baseItems.splice(2, 0, { path: '/qr-generator', label: 'QR Generator', icon: '📱' });
     }
 
     return baseItems;

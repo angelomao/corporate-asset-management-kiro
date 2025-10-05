@@ -25,7 +25,10 @@
     "debug:login": "./scripts/debug-login.sh",
     "fix:login": "./scripts/fix-login.sh",
     "fix:ec2-login": "./scripts/fix-ec2-login.sh",
-    "setup:ec2": "./scripts/setup-ec2-environment.sh"
+    "setup:ec2": "./scripts/setup-ec2-environment.sh",
+    "security:scan": "./scripts/security-scan.sh",
+    "security:fix": "./scripts/auto-security-fix.sh",
+    "security:full": "./scripts/security-scan.sh && ./scripts/auto-security-fix.sh"
   },
   "keywords": ["asset-management", "corporate", "inventory"],
   "author": "",

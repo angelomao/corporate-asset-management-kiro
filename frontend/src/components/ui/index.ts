@@ -8,3 +8,5 @@ export { Card } from './Card';
 export { ErrorDisplay, FieldError, LoadingError } from './ErrorDisplay';
 export { AdvancedSearch } from './AdvancedSearch';
 export { Pagination } from './Pagination';
+export { QRCodeDisplay } from './QRCodeDisplay';
+export { QRScanner } from './QRScanner';
