@@ -19,6 +19,9 @@ interface AssetFormData {
   purchasePrice: string;
   vendor: string;
   location: string;
+  ownerName: string;
+  ownerDepartment: string;
+  ownerEmail: string;
 }
 
 const ASSET_CATEGORIES: { value: AssetCategory; label: string }[] = [
@@ -72,6 +75,9 @@ export const AssetList: React.FC = () => {
     purchasePrice: '',
     vendor: '',
     location: '',
+    ownerName: '',
+    ownerDepartment: '',
+    ownerEmail: '',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -287,6 +293,9 @@ export const AssetList: React.FC = () => {
         purchasePrice: '',
         vendor: '',
         location: '',
+        ownerName: '',
+        ownerDepartment: '',
+        ownerEmail: '',
       });
       setShowCreateForm(false);
     } catch (err: any) {
@@ -387,12 +396,28 @@ export const AssetList: React.FC = () => {
           purchasePrice: result.assetData?.purchasePrice ? result.assetData.purchasePrice.toString() : '',
           vendor: result.assetData?.vendor || '',
           location: result.assetData?.location || '',
+          ownerName: result.assetData?.ownerName || '',
+          ownerDepartment: result.assetData?.ownerDepartment || '',
+          ownerEmail: result.assetData?.ownerEmail || '',
         };
         
         console.log('8. Setting form data to:', newFormData);
         setFormData(newFormData);
         setShowCreateForm(true);
         console.log('9. Form should now be visible with pre-filled data');
+        
+        // Show owner info if available
+        if (result.assetData?.ownerName || result.assetData?.ownerDepartment || result.assetData?.ownerEmail) {
+          const ownerInfo = [
+            result.assetData.ownerName && `Owner: ${result.assetData.ownerName}`,
+            result.assetData.ownerDepartment && `Department: ${result.assetData.ownerDepartment}`,
+            result.assetData.ownerEmail && `Email: ${result.assetData.ownerEmail}`,
+          ].filter(Boolean).join('\n');
+          
+          setTimeout(() => {
+            alert(`QR Code Scanned!\n\nOwner Information:\n${ownerInfo}\n\nNote: You can assign this asset to the owner after registration.`);
+          }, 500);
+        }
       }
     } catch (err: any) {
       console.error('=== QR SCAN ERROR ===');
@@ -427,6 +452,9 @@ export const AssetList: React.FC = () => {
       purchasePrice: asset.purchasePrice ? asset.purchasePrice.toString() : '',
       vendor: asset.vendor || '',
       location: asset.location || '',
+      ownerName: asset.ownerName || '',
+      ownerDepartment: asset.ownerDepartment || '',
+      ownerEmail: asset.ownerEmail || '',
     });
     setShowCreateForm(true);
   };
@@ -487,6 +515,9 @@ export const AssetList: React.FC = () => {
         purchasePrice: '',
         vendor: '',
         location: '',
+        ownerName: '',
+        ownerDepartment: '',
+        ownerEmail: '',
       });
       setShowCreateForm(false);
       setEditingAsset(null);
@@ -545,6 +576,9 @@ export const AssetList: React.FC = () => {
       purchasePrice: '',
       vendor: '',
       location: '',
+      ownerName: '',
+      ownerDepartment: '',
+      ownerEmail: '',
     });
     setFormErrors({});
   };
@@ -682,6 +716,33 @@ export const AssetList: React.FC = () => {
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Enter asset description"
             />
+            
+            <div className="border-t pt-4 mt-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Owner Information (Optional)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Input
+                  label="Owner Name"
+                  value={formData.ownerName}
+                  onChange={(e) => handleInputChange('ownerName', e.target.value)}
+                  placeholder="Enter owner's name"
+                />
+                
+                <Input
+                  label="Department"
+                  value={formData.ownerDepartment}
+                  onChange={(e) => handleInputChange('ownerDepartment', e.target.value)}
+                  placeholder="Enter department"
+                />
+                
+                <Input
+                  label="Owner Email"
+                  type="email"
+                  value={formData.ownerEmail}
+                  onChange={(e) => handleInputChange('ownerEmail', e.target.value)}
+                  placeholder="owner@example.com"
+                />
+              </div>
+            </div>
             
             <div className="flex justify-end space-x-3">
               <Button

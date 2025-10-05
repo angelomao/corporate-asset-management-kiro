@@ -16,6 +16,9 @@ const createAssetSchema = z.object({
   purchasePrice: z.number().positive().optional(),
   vendor: z.string().optional(),
   location: z.string().optional(),
+  ownerName: z.string().optional(),
+  ownerDepartment: z.string().optional(),
+  ownerEmail: z.string().email().optional().or(z.literal('')),
 });
 
 const updateAssetSchema = z.object({
@@ -28,6 +31,9 @@ const updateAssetSchema = z.object({
   purchasePrice: z.number().positive().optional(),
   vendor: z.string().optional(),
   location: z.string().optional(),
+  ownerName: z.string().optional(),
+  ownerDepartment: z.string().optional(),
+  ownerEmail: z.string().email().optional().or(z.literal('')),
 });
 
 const assignAssetSchema = z.object({

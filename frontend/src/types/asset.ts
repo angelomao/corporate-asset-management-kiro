@@ -12,6 +12,9 @@ export interface Asset {
   purchasePrice?: number;
   vendor?: string;
   location?: string;
+  ownerName?: string;
+  ownerDepartment?: string;
+  ownerEmail?: string;
   assigneeId?: string;
   assignee?: {
     id: string;

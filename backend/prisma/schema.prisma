@@ -40,6 +40,12 @@ model Asset {
   purchasePrice Decimal?
   vendor        String?
   location      String?
+  
+  // Owner information (from QR code or manual entry)
+  ownerName       String?
+  ownerDepartment String?
+  ownerEmail      String?
+  
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 

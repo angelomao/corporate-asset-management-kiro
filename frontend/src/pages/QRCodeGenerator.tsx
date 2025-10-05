@@ -18,6 +18,9 @@ export const QRCodeGenerator: React.FC = () => {
     vendor: '',
     location: '',
     purchasePrice: '',
+    ownerName: '',
+    ownerDepartment: '',
+    ownerEmail: '',
   });
   const [qrCode, setQrCode] = useState<string | null>(null);
 
@@ -31,6 +34,9 @@ export const QRCodeGenerator: React.FC = () => {
       vendor: formData.vendor,
       location: formData.location,
       purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : undefined,
+      ownerName: formData.ownerName,
+      ownerDepartment: formData.ownerDepartment,
+      ownerEmail: formData.ownerEmail,
     });
 
     try {
@@ -102,6 +108,9 @@ export const QRCodeGenerator: React.FC = () => {
               ${formData.vendor ? `<p>Vendor: ${formData.vendor}</p>` : ''}
               ${formData.location ? `<p>Location: ${formData.location}</p>` : ''}
               ${formData.purchasePrice ? `<p>Price: $${formData.purchasePrice}</p>` : ''}
+              ${formData.ownerName ? `<p style="margin-top: 10px; font-weight: bold;">Owner: ${formData.ownerName}</p>` : ''}
+              ${formData.ownerDepartment ? `<p>Department: ${formData.ownerDepartment}</p>` : ''}
+              ${formData.ownerEmail ? `<p>Email: ${formData.ownerEmail}</p>` : ''}
             </div>
             <img src="${qrCode}" alt="QR Code" />
             <script>
@@ -171,6 +180,34 @@ export const QRCodeGenerator: React.FC = () => {
             onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
             placeholder="0.00"
           />
+
+          <div className="border-t pt-4 mt-4">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Owner Information (Optional)</h3>
+            
+            <div className="space-y-4">
+              <Input
+                label="Owner Name"
+                value={formData.ownerName}
+                onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+                placeholder="Enter owner's name"
+              />
+
+              <Input
+                label="Department"
+                value={formData.ownerDepartment}
+                onChange={(e) => setFormData({ ...formData, ownerDepartment: e.target.value })}
+                placeholder="Enter department"
+              />
+
+              <Input
+                label="Owner Email"
+                type="email"
+                value={formData.ownerEmail}
+                onChange={(e) => setFormData({ ...formData, ownerEmail: e.target.value })}
+                placeholder="owner@example.com"
+              />
+            </div>
+          </div>
 
           <Button
             onClick={generateQRCode}
